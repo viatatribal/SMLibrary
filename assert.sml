@@ -4,6 +4,7 @@
 signature assert =
 sig
   type assertType
+  exception Failure
   val isTrue : bool -> unit
   val isFalse : bool -> unit
 
@@ -44,6 +45,7 @@ datatype assertType = Passed of string
                     | NotEqual of string * string
                     | GeneralFailure of string
 
+exception Failure;
 (* ('a * 'a -> bool) 'a 'a ('a -> string) -> assertType
  * Checks if two values are equal to each other
  * it also takes a function that can compare both values
@@ -71,11 +73,11 @@ fun equalOption compareFun actVal expVal valToStr =
       | (SOME x, SOME y) =>
         equal compareFun (valOf actVal) (valOf expVal) valToStr
 
-(* asserttype -> unit 
+(* asserttype -> unit
  * Helper function to print isTrue/isFalse functions *)
 fun boolPrint (Passed(x)) = print x
-  | boolPrint (GeneralFailure(x)) = print x;
-
+  | boolPrint (GeneralFailure(x)) = ( print x
+                                    ; raise Failure)
 (* bool -> unit
  * Checks if it's true *)
 fun isTrue boolean =
@@ -94,10 +96,12 @@ fun isFalse boolean =
  * also print the expected and actual values too
  * !!! *)
 fun equalPrint (Passed(x)) = print x
-  | equalPrint (GeneralFailure(x)) = print x
+  | equalPrint (GeneralFailure(x)) = ( print x
+                                     ; raise Failure)
   | equalPrint (NotEqual(x,y)) =
-    print ("Not equal!\n" ^
-           "Actual value is <" ^ x ^ ">\nExpected value is <" ^ y ^ ">\n")
+    ( print ("Not equal!\n" ^
+             "Actual value is <" ^ x ^ ">\nExpected value is <" ^ y ^ ">\n")
+    ; raise Failure)
 
 (* int int -> unit
  * Checks if two ints are equal *)
